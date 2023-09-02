@@ -1,0 +1,3 @@
+## deploy
+
+clasp push
