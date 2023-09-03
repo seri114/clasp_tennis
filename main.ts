@@ -1,8 +1,9 @@
-function getRecentEvents() {
-    var today = new Date();
-    var oneMonthAgo = new Date(today.getFullYear(), today.getMonth() - 3, today.getDate());
-    var events = CalendarApp.getDefaultCalendar().getEvents(oneMonthAgo, today);
-    return events;
+interface EventInfo {
+    title: string
+};
+interface ResultInterface {
+    info: string,
+    warn: string,
 }
 
 function doGet(e: any) {
@@ -11,27 +12,30 @@ function doGet(e: any) {
     return template.evaluate().setTitle("テニス予定追加").addMetaTag('viewport', 'width=device-width, initial-scale=1');
 }
 
-function getTodayTennisEvents(){
+function getRecentEvents(): GoogleAppsScript.Calendar.CalendarEvent[] {
+    var today = new Date();
+    var oneMonthAgo = new Date(today.getFullYear(), today.getMonth() - 6, today.getDate());
+    var events = CalendarApp.getDefaultCalendar().getEvents(oneMonthAgo, today);
+    return events;
+}
+
+function getTodayTennisEvents(): GoogleAppsScript.Calendar.CalendarEvent[] {
     var date = new Date();
     var events = CalendarApp.getDefaultCalendar().getEventsForDay(date);
-    var tennisEvents = events.filter(function (event) {
-        return event.getTitle().indexOf("テニス") !== -1;
-    });
+    var tennisEvents = events.filter((event) =>
+        event.getTitle().indexOf("テニス") !== -1
+    );
     return tennisEvents;
 }
 
-function getTodayTennisEventsInfo(){
-    return getTodayTennisEvents().map((event)=>{
-        return {
-            title: event.getTitle()
-        }
-    })
+function getTodayTennisEventsInfo(): EventInfo[] {
+    return getTodayTennisEvents().map((event) => ({ title: event.getTitle() }))
 }
 
-function removeTodayTennis(){
+function removeTodayTennis(): string {
     const events = getTodayTennisEvents();
-    var [,event] = getLatestTennisEvent(events);
-    if(event){
+    var [, event] = getLatestTennisEvent(events);
+    if (event) {
         const title = event.getTitle()
         event.deleteEvent();
         return title;
@@ -39,7 +43,7 @@ function removeTodayTennis(){
     return "";
 }
 
-function getTennisNumber(event: GoogleAppsScript.Calendar.CalendarEvent){
+function getTennisNumber(event: GoogleAppsScript.Calendar.CalendarEvent): number | undefined {
     var title = event.getTitle();
     if (title.match(/^テニス\s*(\d+)$/)) {
         var n = parseInt(RegExp.$1);
@@ -48,13 +52,14 @@ function getTennisNumber(event: GoogleAppsScript.Calendar.CalendarEvent){
     return undefined;
 }
 
-function getLatestTennisEvent(events: GoogleAppsScript.Calendar.CalendarEvent[]): [number, GoogleAppsScript.Calendar.CalendarEvent  | undefined]{
+function getLatestTennisEvent(events: GoogleAppsScript.Calendar.CalendarEvent[])
+    : [number, GoogleAppsScript.Calendar.CalendarEvent | undefined] {
     // テニスXXの数字を取得
     var num = 0;
     var event: GoogleAppsScript.Calendar.CalendarEvent | undefined = undefined;
     for (var i = 0; i < events.length; i++) {
         const n = getTennisNumber(events[i]);
-        if(n !== undefined){
+        if (n !== undefined) {
             if (n > num) {
                 num = n;
                 event = events[i]
@@ -64,7 +69,7 @@ function getLatestTennisEvent(events: GoogleAppsScript.Calendar.CalendarEvent[])
     return [num, event];
 }
 
-function addTennis() {
+function addTennis(): ResultInterface {
     var events = getRecentEvents()
 
     // テニスXXの数字を取得
