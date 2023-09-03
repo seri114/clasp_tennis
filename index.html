@@ -25,8 +25,9 @@
                             {{ item.title }}
                         </li>
                     </div>
-                    <button type="button" class="btn btn--radius" @click="addTennisFunction(this)">一つ追加</button>
-                    <button type="button" class="btn btn--radius" @click="removeTennisFunction(this)">一つ削除</button>
+                    <button type="button" class="btn btn--radius" @click="addTennisFunction(this)">&nbsp;<i class="fa-solid fa-plus" style="size-adjust: 80%;"></i>&nbsp;追加&nbsp;</button>
+                    <button v-if="tennisEvents.length > 0" type="button" class="btn btn--radius"
+                        @click="removeTennisFunction(this)">&nbsp;<i class="fa-solid fa-xmark" style="size-adjust: 80%;"></i>&nbsp;削除&nbsp;</button>
                 </div>
                 <p>{{ eResult.info}}</p>
                 <p class="red">{{ eResult.warn}}</p>
