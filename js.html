@@ -20,8 +20,8 @@
                 google.script.run
                     .withSuccessHandler((result) =>
                         app.updateTennisEvents(
-                            () => this.eResult = { info: `${result} を削除しました` }))
-                    .removeTodayTennis();
+                            () => this.eResult = { info: `${result.title} を削除しました` }))
+                    .removeLastTodayTennis();
             },
             updateTennisEvents: function (handler) {
                 google.script.run
@@ -29,7 +29,7 @@
                         if (handler) {
                             handler();
                         }
-                        this.tennisEvents = result.slice().reverse();
+                        this.tennisEvents = result;
                     })
                     .getTodayTennisEventsInfo();
             }

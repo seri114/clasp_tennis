@@ -1,6 +1,7 @@
 interface EventInfo {
     title: string
 };
+
 interface ResultInterface {
     info: string,
     warn: string,
@@ -12,68 +13,59 @@ function doGet(e: any) {
     return template.evaluate().setTitle("テニス予定追加").addMetaTag('viewport', 'width=device-width, initial-scale=1');
 }
 
+const eventSearchFilter = { search: 'テニス' };
+const getCalendar = () => CalendarApp.getDefaultCalendar();
+
 function getRecentEvents(): GoogleAppsScript.Calendar.CalendarEvent[] {
     var today = new Date();
-    var oneMonthAgo = new Date(today.getFullYear(), today.getMonth() - 6, today.getDate());
-    var events = CalendarApp.getDefaultCalendar().getEvents(oneMonthAgo, today);
-    return events;
+    var searchStartDate = new Date(today.getFullYear(), today.getMonth() - 3, today.getDate());
+    var events = getCalendar().getEvents(searchStartDate, today, eventSearchFilter);
+    return filterAndSortEvents(events);
 }
 
 function getTodayTennisEvents(): GoogleAppsScript.Calendar.CalendarEvent[] {
     var date = new Date();
-    var events = CalendarApp.getDefaultCalendar().getEventsForDay(date);
-    var tennisEvents = events.filter((event) =>
-        event.getTitle().indexOf("テニス") !== -1
-    );
-    return tennisEvents;
+    var events = getCalendar().getEventsForDay(date, eventSearchFilter);
+    return filterAndSortEvents(events);
 }
 
-function getTodayTennisEventsInfo(): EventInfo[] {
-    return getTodayTennisEvents().map((event) => ({ title: event.getTitle() }))
-}
+const filterAndSortEvents = (events: GoogleAppsScript.Calendar.CalendarEvent[]) =>
+    events.filter((event) => getTennisNumber(event) > 0)
+        .sort((a, b) => getTennisNumber(a) - getTennisNumber(b))
 
-function removeTodayTennis(): string {
+const calEventToEventInfo = (event: GoogleAppsScript.Calendar.CalendarEvent) : EventInfo => ({ title: event.getTitle() });
+
+const getTodayTennisEventsInfo = () => getTodayTennisEvents().map(calEventToEventInfo);
+
+function removeLastTodayTennis(): EventInfo {
     const events = getTodayTennisEvents();
-    var [, event] = getLatestTennisEvent(events);
-    if (event) {
-        const title = event.getTitle()
-        event.deleteEvent();
-        return title;
+    if (events.length === 0) {
+        return { title: "" }
     }
-    return "";
+    const event = events.slice().reverse()[0];
+    const ret = calEventToEventInfo(event);
+    event.deleteEvent();
+    return ret;
 }
 
-function getTennisNumber(event: GoogleAppsScript.Calendar.CalendarEvent): number | undefined {
+function getTennisNumber(event: GoogleAppsScript.Calendar.CalendarEvent): number {
     var title = event.getTitle();
     if (title.match(/^テニス\s*(\d+)$/)) {
         var n = parseInt(RegExp.$1);
         return n;
     }
-    return undefined;
-}
-
-function getLatestTennisEvent(events: GoogleAppsScript.Calendar.CalendarEvent[])
-    : [number, GoogleAppsScript.Calendar.CalendarEvent | undefined] {
-    // テニスXXの数字を取得
-    var num = 0;
-    var event: GoogleAppsScript.Calendar.CalendarEvent | undefined = undefined;
-    for (var i = 0; i < events.length; i++) {
-        const n = getTennisNumber(events[i]);
-        if (n !== undefined) {
-            if (n > num) {
-                num = n;
-                event = events[i]
-            }
-        }
-    }
-    return [num, event];
+    return 0;
 }
 
 function addTennis(): ResultInterface {
-    var events = getRecentEvents()
+    var events = getRecentEvents();
 
-    // テニスXXの数字を取得
-    var [num,] = getLatestTennisEvent(events);
+    // 直近のテニスXXを取得
+    var num = 0;
+    if (events.length > 0) {
+        const event = events.slice().reverse()[0];
+        num = getTennisNumber(event);
+    }
     num++;
 
     // 新しい予定のタイトルを作成
