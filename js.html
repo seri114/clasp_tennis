@@ -4,52 +4,44 @@
         el: '#app',
         data: {
             isLoading: true,
-            eResult: '読み込み中..',
-            isTennisAdded: false
+            eResult: { info: '読み込み中..' },
+            tennisEvents: [],
         },
         methods: {
             addTennisFunction: function () {
-                this.eResult = "追加中..";
+                this.eResult = { info: "追加中.." };
                 google.script.run
                     .withSuccessHandler((result) => {
-                        this.eResult = result;
-                        this.isTennisAdded = true;
+                        app.updateTennisEvents(() => this.eResult = result)
                     })
                     .addTennis();
             },
             removeTennisFunction: function () {
-                this.eResult = "削除中..";
+                this.eResult = { info: "削除中.." };
                 google.script.run
                     .withSuccessHandler((result) => {
-                        if (result) {
-                            this.eResult = "削除成功";
-                        } else {
-                            this.eResult = "削除失敗";
-                        }
-                        this.isTennisAdded = false;
+                        app.updateTennisEvents(() => this.eResult = { info: `${result} を削除しました`})
                     })
                     .removeTodayTennis();
 
             },
-            updateTennisAdded: function (handler) {
+            updateTennisEvents: function (handler) {
                 google.script.run
                     .withSuccessHandler((result) => {
                         if (handler) {
                             handler();
                         }
-                        this.eResult = "";
-                        if (result) {
-                            this.eResult = "テニスの予定は追加済みです";
-                            this.isTennisAdded = result
-                        }
+                        this.tennisEvents = result.slice().reverse();
                     })
-                    .isTennisAdded();
-
+                    .getTodayTennisEventsInfo();
             }
         },
         mounted() {
             window.onload = () => {
-                app.updateTennisAdded(() => this.isLoading = false)
+                app.updateTennisEvents(() => {
+                    this.isLoading = false;
+                    this.eResult = {};
+                })
             }
         }
     });
