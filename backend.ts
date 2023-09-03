@@ -18,8 +18,9 @@ const getCalendar = () => CalendarApp.getDefaultCalendar();
 
 function getRecentEvents(): GoogleAppsScript.Calendar.CalendarEvent[] {
     var today = new Date();
+    var todayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59);
     var searchStartDate = new Date(today.getFullYear(), today.getMonth() - 3, today.getDate());
-    var events = getCalendar().getEvents(searchStartDate, today, eventSearchFilter);
+    var events = getCalendar().getEvents(searchStartDate, todayEnd, eventSearchFilter);
     return filterAndSortEvents(events);
 }
 
@@ -33,7 +34,7 @@ const filterAndSortEvents = (events: GoogleAppsScript.Calendar.CalendarEvent[]) 
     events.filter((event) => getTennisNumber(event) > 0)
         .sort((a, b) => getTennisNumber(a) - getTennisNumber(b))
 
-const calEventToEventInfo = (event: GoogleAppsScript.Calendar.CalendarEvent) : EventInfo => ({ title: event.getTitle() });
+const calEventToEventInfo = (event: GoogleAppsScript.Calendar.CalendarEvent): EventInfo => ({ title: event.getTitle() });
 
 const getTodayTennisEventsInfo = () => getTodayTennisEvents().map(calEventToEventInfo);
 
@@ -48,9 +49,11 @@ function removeLastTodayTennis(): EventInfo {
     return ret;
 }
 
+const fullWidth2HalfWidth = (src: string) => src.replace(/[０-９]/g, (s) => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
+
 function getTennisNumber(event: GoogleAppsScript.Calendar.CalendarEvent): number {
     var title = event.getTitle();
-    if (title.match(/^テニス\s*(\d+)$/)) {
+    if (fullWidth2HalfWidth(title).match(/^テニス\s*(\d+)$/)) {
         var n = parseInt(RegExp.$1);
         return n;
     }
