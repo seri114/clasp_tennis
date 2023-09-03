@@ -11,19 +11,17 @@
             addTennisFunction: function () {
                 this.eResult = { info: "追加中.." };
                 google.script.run
-                    .withSuccessHandler((result) => {
-                        app.updateTennisEvents(() => this.eResult = result)
-                    })
+                    .withSuccessHandler((result) =>
+                        app.updateTennisEvents(() => this.eResult = result))
                     .addTennis();
             },
             removeTennisFunction: function () {
                 this.eResult = { info: "削除中.." };
                 google.script.run
-                    .withSuccessHandler((result) => {
-                        app.updateTennisEvents(() => this.eResult = { info: `${result} を削除しました`})
-                    })
+                    .withSuccessHandler((result) =>
+                        app.updateTennisEvents(
+                            () => this.eResult = { info: `${result} を削除しました` }))
                     .removeTodayTennis();
-
             },
             updateTennisEvents: function (handler) {
                 google.script.run
@@ -37,12 +35,11 @@
             }
         },
         mounted() {
-            window.onload = () => {
+            window.onload = () =>
                 app.updateTennisEvents(() => {
                     this.isLoading = false;
                     this.eResult = {};
                 })
-            }
         }
     });
 </script>

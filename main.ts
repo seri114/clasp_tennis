@@ -87,6 +87,6 @@ function addTennis() {
     }
     return {
         info: `${event.getTitle()} を追加しました。`,
-        warn: needBankTransfer ? "振り込みが必要です!!!" : ""
+        warn: needBankTransfer ? "振り込みが必要です。" : ""
     }
 }

@@ -17,18 +17,19 @@
                 </p>
                 <div v-if="!isLoading">
                     <div v-if="tennisEvents.length === 0">
-                        予定はありません
+                        予定はありません。<br>
+                        追加してください。
                     </div>
                     <div v-else>
                         <li v-for="item in tennisEvents">
                             {{ item.title }}
                         </li>
                     </div>
-                    <button type="button" class="btn btn btn--radius" @click="addTennisFunction(this)">一つ追加</button>
-                    <button type="button" class="btn btn btn--radius" @click="removeTennisFunction(this)">一つ削除</button>
+                    <button type="button" class="btn btn--radius" @click="addTennisFunction(this)">一つ追加</button>
+                    <button type="button" class="btn btn--radius" @click="removeTennisFunction(this)">一つ削除</button>
                 </div>
                 <p>{{ eResult.info}}</p>
-                <p>{{ eResult.warn}}</p>
+                <p class="red">{{ eResult.warn}}</p>
             </div>
         </div>
     </div>
